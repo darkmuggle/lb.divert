@@ -43,7 +43,7 @@ case "${1}" in
 		if [ -f chroot/sbin/initctl ]
 		then
 			# Save initctl file
-			mv chroot/sbin/initctl chroot/sbin/initctl.orig
+			Chroot chroot dpkg-divert --quiet --rename --add /sbin/initctl
 		fi
 
 		# Create initctl file
@@ -68,13 +68,14 @@ EOF
 		# Creating lock file
 		Create_lockfile .lock
 
-		if [ -f chroot/sbin/initctl.orig ]
-		then
-			# Restore initctl file
-			mv chroot/sbin/initctl.orig chroot/sbin/initctl
-		else
+		if [ -f chroot/sbin/initctl ]
 			# Remove initctl file
 			rm -f chroot/sbin/initctl
+		fi
+
+		if [ -f chroot/sbin/initctl.distrib ]
+			# Remove the diversion
+			Chroot chroot dpkg-divert --quiet --rename --remove /sbin/initctl
 		fi
 
 		# Removing stage file

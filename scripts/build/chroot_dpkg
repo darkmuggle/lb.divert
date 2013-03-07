@@ -40,8 +40,8 @@ case "${1}" in
 		# Creating lock file
 		Create_lockfile .lock
 
-		# Save start-stop-daemon program
-		mv chroot/sbin/start-stop-daemon chroot/sbin/start-stop-daemon.orig
+		# Create diversion for start-stop-daemon
+		Chroot chroot dpkg-divert --quiet --rename --add /sbin/start-stop-daemon
 
 		# Create start-stop-daemon program
 
@@ -103,10 +103,16 @@ EOF
 			${LB_ROOT_COMMAND} rmdir --ignore-fail-on-non-empty /var/state/samhain || true
 		fi
 
-		# Restore start-stop-daemon program
-		if [ -e chroot/sbin/start-stop-daemon.orig ]
+		# Remove live-build start-stop-daemon
+		if [ -e chroot/sbin/start-stop-daemon ]
 		then
-			mv chroot/sbin/start-stop-daemon.orig chroot/sbin/start-stop-daemon
+			rm -f chroot/sbin/start-stop-daemon
+		fi
+
+		# Restore dpkg diversion
+		if [ -e chroot/sbin/start-stop-daemon.distrib ]
+		then
+			Chroot chroot dpkg-divert --quiet --rename --remove /sbin/start-stop-daemon
 		fi
 
 		# Remove dpkg sync configuration
